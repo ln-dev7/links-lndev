@@ -26,6 +26,11 @@
         localStorage.setItem(k, v)
       } catch (e) {}
     },
+    remove: function (k) {
+      try {
+        localStorage.removeItem(k)
+      } catch (e) {}
+    },
   }
 
   /* ---------------------------------------------------------------- */
@@ -497,6 +502,378 @@
   }
 
   /* ---------------------------------------------------------------- */
+  /* Organiser l'écran comme sur un téléphone                         */
+  /* Appui long : les icônes tremblent, on les fait glisser, OK pour  */
+  /* terminer. La disposition reste sur l'appareil du visiteur.       */
+  /* ---------------------------------------------------------------- */
+
+  var LAYOUT_KEY = 'ln-layout'
+  var LONG_PRESS = 500
+  var groups = {
+    home: { containers: $$('[data-group="home"]'), capacity: 4, fixed: false },
+    dock: { containers: $$('[data-group="dock"]'), capacity: Infinity, fixed: true },
+  }
+
+  function groupItems(g) {
+    return groups[g].containers.reduce(function (all, c) {
+      return all.concat($$('[data-id]', c))
+    }, [])
+  }
+  function idsOf(list) {
+    return list.map(function (el) {
+      return el.getAttribute('data-id')
+    })
+  }
+  function groupOf(el) {
+    return el.closest('[data-group="dock"]') ? 'dock' : 'home'
+  }
+  function itemFrom(node) {
+    return node && node.closest ? node.closest('[data-group] [data-id]') : null
+  }
+  function nameOf(el) {
+    var label = $('.label', el)
+    return label ? label.textContent : el.getAttribute('data-social') || el.getAttribute('data-id')
+  }
+
+  // Range les éléments d'un groupe dans l'ordre donné, quatre par conteneur sur l'écran d'accueil.
+  function place(g, order) {
+    var byId = {}
+    groupItems(g).forEach(function (el) {
+      byId[el.getAttribute('data-id')] = el
+    })
+    var list = order.filter(function (id, i) {
+      return byId[id] && order.indexOf(id) === i
+    })
+    Object.keys(byId).forEach(function (id) {
+      if (list.indexOf(id) < 0) list.push(id)
+    })
+    var cs = groups[g].containers
+    var cap = groups[g].capacity
+    list.forEach(function (id, i) {
+      cs[Math.min(cs.length - 1, Math.floor(i / cap))].appendChild(byId[id])
+    })
+  }
+
+  var defaults = { home: idsOf(groupItems('home')), dock: idsOf(groupItems('dock')) }
+
+  function currentLayout() {
+    return { home: idsOf(groupItems('home')), dock: idsOf(groupItems('dock')) }
+  }
+  function isDefault() {
+    var c = currentLayout()
+    return c.home.join() === defaults.home.join() && c.dock.join() === defaults.dock.join()
+  }
+  function saveLayout() {
+    if (isDefault()) store.remove(LAYOUT_KEY)
+    else store.set(LAYOUT_KEY, JSON.stringify(currentLayout()))
+    $('[data-reset]').hidden = isDefault()
+  }
+
+  ;(function restoreLayout() {
+    var saved = null
+    try {
+      saved = JSON.parse(store.get(LAYOUT_KEY) || 'null')
+    } catch (e) {}
+    if (!saved) return
+    if (Array.isArray(saved.home)) place('home', saved.home)
+    if (Array.isArray(saved.dock)) place('dock', saved.dock)
+  })()
+
+  // Animation FLIP : chaque icône glisse de son ancienne place vers la nouvelle.
+  function flip(g, mutate) {
+    var els = groupItems(g)
+    var before = els.map(function (el) {
+      return el.getBoundingClientRect()
+    })
+    mutate()
+    if (reduceMotion.matches) return
+    els.forEach(function (el, i) {
+      var a = before[i]
+      var b = el.getBoundingClientRect()
+      var dx = a.left - b.left
+      var dy = a.top - b.top
+      if (!dx && !dy) return
+      el.style.transition = 'none'
+      el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)'
+      el.getBoundingClientRect()
+      el.style.transition = 'transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1)'
+      el.style.transform = ''
+    })
+  }
+
+  var editing = false
+  var announcer = $('#announcer')
+  function announce(text) {
+    announcer.textContent = ''
+    setTimeout(function () {
+      announcer.textContent = text
+    }, 30)
+  }
+
+  function setEditing(on) {
+    if (editing === on) return
+    editing = on
+    root.classList.toggle('editing', on)
+    $('.edit-bar').hidden = !on
+    $('.lang').hidden = on
+    $('[data-reset]').hidden = isDefault()
+    announce(t(on ? 'editOn' : 'editOff'))
+    if (on && navigator.vibrate) {
+      try {
+        navigator.vibrate(12)
+      } catch (e) {}
+    }
+  }
+
+  $('[data-done]').addEventListener('click', function () {
+    setEditing(false)
+  })
+  $('[data-reset]').addEventListener('click', function () {
+    flip('home', function () {
+      place('home', defaults.home)
+    })
+    flip('dock', function () {
+      place('dock', defaults.dock)
+    })
+    saveLayout()
+  })
+
+  // Emplacements figés au début du glissement : la grille ne bouge pas, seules les icônes changent de case.
+  var press = null
+  var drag = null
+  var lastTouch = 0
+
+  function slotsOf(g) {
+    var fixed = groups[g].fixed
+    return groupItems(g).map(function (el) {
+      var r = el.getBoundingClientRect()
+      var top = fixed ? r.top : r.top + window.scrollY
+      return { left: r.left, top: top, right: r.right, bottom: top + r.height, cx: r.left + r.width / 2, cy: top + r.height / 2 }
+    })
+  }
+
+  function cancelPress() {
+    if (press) clearTimeout(press.timer)
+    press = null
+  }
+
+  function startPress(x, y, target, kind) {
+    cancelPress()
+    var el = itemFrom(target)
+    if (!el) return
+    press = { el: el, x: x, y: y, kind: kind, armed: editing }
+    if (!editing) {
+      press.timer = setTimeout(function () {
+        if (!press) return
+        press.armed = true
+        press.longPressed = true
+        setEditing(true)
+      }, LONG_PRESS)
+    }
+  }
+
+  function beginDrag(el, x, y) {
+    var r = el.getBoundingClientRect()
+    var ghost = el.cloneNode(true)
+    ghost.removeAttribute('data-id')
+    ghost.removeAttribute('href')
+    ghost.removeAttribute('id')
+    ghost.setAttribute('aria-hidden', 'true')
+    ghost.classList.add('drag-ghost')
+    if (groupOf(el) === 'dock') ghost.classList.add('is-dock')
+    ghost.style.left = r.left + 'px'
+    ghost.style.top = r.top + 'px'
+    ghost.style.width = r.width + 'px'
+    ghost.style.height = r.height + 'px'
+    document.body.appendChild(ghost)
+    el.classList.add('is-placeholder')
+    root.classList.add('dragging')
+    var g = groupOf(el)
+    drag = { el: el, group: g, ghost: ghost, startX: x, startY: y, x: x, y: y, slots: slotsOf(g) }
+    requestAnimationFrame(autoScroll)
+  }
+
+  function hitTest() {
+    var g = drag.group
+    var px = drag.x
+    var py = groups[g].fixed ? drag.y : drag.y + window.scrollY
+    var best = -1
+    var bestD = Infinity
+    drag.slots.forEach(function (s, i) {
+      var inside = px >= s.left - 6 && px <= s.right + 6 && py >= s.top - 6 && py <= s.bottom + 6
+      var d = Math.hypot(px - s.cx, py - s.cy)
+      if (inside && d < bestD) {
+        bestD = d
+        best = i
+      }
+    })
+    if (best < 0) return
+    var list = groupItems(g)
+    var from = list.indexOf(drag.el)
+    if (best === from) return
+    flip(g, function () {
+      var order = idsOf(list)
+      order.splice(from, 1)
+      order.splice(best, 0, drag.el.getAttribute('data-id'))
+      place(g, order)
+    })
+  }
+
+  function moveDrag(x, y) {
+    drag.x = x
+    drag.y = y
+    drag.ghost.style.transform = 'translate3d(' + (x - drag.startX) + 'px,' + (y - drag.startY) + 'px,0) scale(1.12)'
+    hitTest()
+  }
+
+  // Près des bords, la page défile pour atteindre les autres rangées.
+  function autoScroll() {
+    if (!drag) return
+    if (drag.group === 'home') {
+      var v = 0
+      var bottomEdge = window.innerHeight - 150
+      if (drag.y < 90) v = -(90 - drag.y) / 5
+      else if (drag.y > bottomEdge) v = (drag.y - bottomEdge) / 5
+      if (v) {
+        window.scrollBy(0, v)
+        hitTest()
+      }
+    }
+    requestAnimationFrame(autoScroll)
+  }
+
+  function endDrag() {
+    var d = drag
+    drag = null
+    root.classList.remove('dragging')
+    var r = d.el.getBoundingClientRect()
+    var g0 = d.ghost.getBoundingClientRect()
+    var baseLeft = parseFloat(d.ghost.style.left)
+    var baseTop = parseFloat(d.ghost.style.top)
+    // L'icône rejoint sa case puis réapparaît à sa place.
+    d.ghost.classList.add('is-dropping')
+    d.ghost.style.transform = 'translate3d(' + (r.left - baseLeft) + 'px,' + (r.top - baseTop) + 'px,0)'
+    setTimeout(
+      function () {
+        d.ghost.remove()
+        d.el.classList.remove('is-placeholder')
+      },
+      reduceMotion.matches || !g0.width ? 0 : 230
+    )
+    saveLayout()
+    var list = groupItems(d.group)
+    announce(t('editMoved', { name: nameOf(d.el), pos: list.indexOf(d.el) + 1, total: list.length }))
+  }
+
+  function movePointer(x, y, e) {
+    if (drag) {
+      if (e && e.cancelable) e.preventDefault()
+      moveDrag(x, y)
+      return
+    }
+    if (!press) return
+    var dist = Math.hypot(x - press.x, y - press.y)
+    if (!press.armed) {
+      if (dist > 10) cancelPress()
+      return
+    }
+    if (e && e.cancelable) e.preventDefault()
+    if (dist > 6) {
+      var el = press.el
+      cancelPress()
+      beginDrag(el, x, y)
+      moveDrag(x, y)
+    }
+  }
+
+  function endPointer() {
+    cancelPress()
+    if (drag) endDrag()
+  }
+
+  document.addEventListener(
+    'touchstart',
+    function (e) {
+      lastTouch = Date.now()
+      if (e.touches.length > 1) return endPointer()
+      var p = e.touches[0]
+      startPress(p.clientX, p.clientY, e.target, 'touch')
+    },
+    { passive: true }
+  )
+  document.addEventListener(
+    'touchmove',
+    function (e) {
+      var p = e.touches[0]
+      movePointer(p.clientX, p.clientY, e)
+    },
+    { passive: false }
+  )
+  document.addEventListener('touchend', endPointer)
+  document.addEventListener('touchcancel', endPointer)
+
+  document.addEventListener('mousedown', function (e) {
+    if (e.button !== 0 || Date.now() - lastTouch < 800) return
+    startPress(e.clientX, e.clientY, e.target, 'mouse')
+    if (editing && itemFrom(e.target)) e.preventDefault()
+  })
+  document.addEventListener('mousemove', function (e) {
+    if (press || drag) movePointer(e.clientX, e.clientY, e)
+  })
+  document.addEventListener('mouseup', endPointer)
+  window.addEventListener('blur', endPointer)
+
+  // Pas de menu contextuel ni d'aperçu de lien pendant un appui long sur une icône.
+  document.addEventListener('contextmenu', function (e) {
+    if ((press && press.kind === 'touch') || editing || drag) {
+      if (itemFrom(e.target)) e.preventDefault()
+    }
+  })
+  document.addEventListener('dragstart', function (e) {
+    if (itemFrom(e.target)) e.preventDefault()
+  })
+
+  // En mode organisation, toucher une icône ne l'ouvre pas ; toucher le fond termine.
+  document.addEventListener(
+    'click',
+    function (e) {
+      if (!editing) return
+      if (e.target.closest('.edit-bar')) return
+      e.preventDefault()
+      e.stopPropagation()
+      if (!itemFrom(e.target) && !e.target.closest('.widget')) setEditing(false)
+    },
+    true
+  )
+
+  // Clavier : en mode organisation, les flèches déplacent l'icône sélectionnée, Échap termine.
+  document.addEventListener('keydown', function (e) {
+    if (!editing) return
+    if (e.key === 'Escape') {
+      setEditing(false)
+      return
+    }
+    var el = itemFrom(document.activeElement)
+    var step = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[e.key]
+    if (!el || !step) return
+    e.preventDefault()
+    var g = groupOf(el)
+    var list = groupItems(g)
+    var from = list.indexOf(el)
+    var to = Math.max(0, Math.min(list.length - 1, from + step))
+    if (to === from) return
+    flip(g, function () {
+      var order = idsOf(list)
+      order.splice(from, 1)
+      order.splice(to, 0, el.getAttribute('data-id'))
+      place(g, order)
+    })
+    el.focus()
+    saveLayout()
+    announce(t('editMoved', { name: nameOf(el), pos: to + 1, total: list.length }))
+  })
+
+  /* ---------------------------------------------------------------- */
   /* Démarrage                                                        */
   /* ---------------------------------------------------------------- */
 
@@ -508,4 +885,9 @@
   applyLang()
   scheduleTick()
   loadChess()
+
+  // Une fois l'écran « déverrouillé », on retire l'animation d'entrée pour qu'elle ne rejoue pas.
+  setTimeout(function () {
+    root.classList.add('unlocked')
+  }, 1400)
 })()

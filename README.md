@@ -9,6 +9,7 @@ La page est pensée comme l’écran d’accueil de mon téléphone : l’heure 
 - **Chess.com** : mon classement public (rapide, blitz) chargé depuis l’API publique de Chess.com ; sans réponse, le widget invite simplement à jouer.
 - **Travail et contact** : portfolio, GitHub, carte de contact ([hi.lndev.me](https://hi.lndev.me)) et email.
 - **Dock** : TikTok, Instagram, YouTube, X, LinkedIn, Threads.
+- **Organiser** : comme sur un téléphone, un appui long sur une icône fait trembler l’écran ; on fait glisser les icônes (apps, travail, dock), puis on touche OK. Toucher le fond ou Échap termine aussi, et les flèches du clavier déplacent l’icône sélectionnée. La disposition est gardée sur l’appareil du visiteur (localStorage) ; « Réinitialiser » remet l’ordre d’origine, celui de `index.html`.
 
 ## Structure
 

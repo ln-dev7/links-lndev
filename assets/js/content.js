@@ -181,6 +181,11 @@ window.LN = {
       chess_blitz: 'Blitz',
       chess_bullet: 'Bullet',
       chess_daily: 'Quotidien',
+      editDone: 'OK',
+      editReset: 'Réinitialiser',
+      editOn: 'Mode organisation : fais glisser les icônes pour les ranger, puis touche OK.',
+      editOff: 'Disposition enregistrée.',
+      editMoved: '{name}, position {pos} sur {total}',
     },
     en: {
       title: 'LN, Leonel Ngoya’s links',
@@ -219,6 +224,11 @@ window.LN = {
       chess_blitz: 'Blitz',
       chess_bullet: 'Bullet',
       chess_daily: 'Daily',
+      editDone: 'Done',
+      editReset: 'Reset',
+      editOn: 'Edit mode: drag the icons to arrange them, then press Done.',
+      editOff: 'Layout saved.',
+      editMoved: '{name}, position {pos} of {total}',
     },
   },
 }
