@@ -105,7 +105,7 @@
     </section>
 
     <main class="home">
-      <nav class="grid apps" data-group="home" aria-label="My apps" data-i18n-aria="appsLabel">
+      <div class="board" data-group="home">
         <a class="app" data-id="travora" draggable="false" href="https://travora.lndev.me" data-app="travora" target="_blank" rel="noopener">
           <span class="icon"><img draggable="false" src="assets/img/apps/travora.svg" alt="" width="64" height="64"></span>
           <span class="label">Travora</span>
@@ -122,49 +122,42 @@
           <span class="icon"><img draggable="false" src="assets/img/apps/release-reel.svg" alt="" width="64" height="64"></span>
           <span class="label">ReleaseReel</span>
         </a>
-      </nav>
-
-      <section class="widget qea" aria-labelledby="qea-title">
-        <header class="qea-head">
-          <img src="assets/img/qea.webp" alt="" width="36" height="36">
-          <div>
-            <h2 id="qea-title" data-i18n="qeaTitle">Quiz et Anecdotes</h2>
-            <p data-i18n="qeaSub">A question from my YouTube channel (in French)</p>
-          </div>
-        </header>
-        <div class="qea-body" id="qea-body">
-          <p class="qea-q">
-            <a href="https://www.youtube.com/@QuizEtAnecdotes" data-i18n="qeaWatch" target="_blank" rel="noopener">Watch the channel</a>
-          </p>
-        </div>
-      </section>
-
-      <div class="grid cluster">
-        <a class="widget chess" href="https://www.chess.com/member/ln_dev" aria-label="Challenge me on Chess.com (@ln_dev)" data-i18n-aria="chessLabel" target="_blank" rel="noopener">
+        <a class="widget chess" data-id="chess" data-name="Chess.com" draggable="false" href="https://www.chess.com/member/ln_dev" aria-label="Challenge me on Chess.com (@ln_dev)" data-i18n-aria="chessLabel" target="_blank" rel="noopener">
           <svg class="piece" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16l-1 4h10l-1-4"/><path d="M9 16h6v-2a4 4 0 0 0-1-3l-.5-3 1-1V5h-2v2h-2V5H9v2l1 1-.5 3a4 4 0 0 0-1 3v2z"/></svg>
           <span class="chess-title" data-i18n="chessTitle">Chess.com</span>
           <span class="chess-handle">@ln_dev</span>
           <span class="chess-stats" id="chess-stats"><span class="chess-invite" data-i18n="chessInvite">Fancy a game?</span></span>
         </a>
-
-        <nav class="work" data-group="home" aria-label="Work and contact" data-i18n-aria="moreLabel">
-          <a class="app" data-id="portfolio" draggable="false" href="https://www.lndev.me" data-portfolio target="_blank" rel="noopener">
-            <span class="icon"><img draggable="false" src="assets/img/apps/portfolio.svg" alt="" width="64" height="64"></span>
-            <span class="label" data-i18n="portfolio">Portfolio</span>
-          </a>
-          <a class="app" data-id="github" draggable="false" href="https://github.com/ln-dev7" target="_blank" rel="noopener">
-            <span class="icon"><img draggable="false" src="assets/img/apps/github.svg" alt="" width="64" height="64"></span>
-            <span class="label" data-i18n="github">GitHub</span>
-          </a>
-          <a class="app" data-id="contact" draggable="false" href="https://hi.lndev.me" target="_blank" rel="noopener">
-            <span class="icon"><img draggable="false" src="assets/img/apps/contact.svg" alt="" width="64" height="64"></span>
-            <span class="label" data-i18n="contact">Contact</span>
-          </a>
-          <a class="app" data-id="email" draggable="false" href="mailto:leonelngoya@gmail.com">
-            <span class="icon"><img draggable="false" src="assets/img/apps/email.svg" alt="" width="64" height="64"></span>
-            <span class="label" data-i18n="email">Email</span>
-          </a>
-        </nav>
+        <a class="app" data-id="portfolio" draggable="false" href="https://www.lndev.me" data-portfolio target="_blank" rel="noopener">
+          <span class="icon"><img draggable="false" src="assets/img/apps/portfolio.svg" alt="" width="64" height="64"></span>
+          <span class="label" data-i18n="portfolio">Portfolio</span>
+        </a>
+        <a class="app" data-id="github" draggable="false" href="https://github.com/ln-dev7" target="_blank" rel="noopener">
+          <span class="icon"><img draggable="false" src="assets/img/apps/github.svg" alt="" width="64" height="64"></span>
+          <span class="label" data-i18n="github">GitHub</span>
+        </a>
+        <a class="app" data-id="contact" draggable="false" href="https://hi.lndev.me" target="_blank" rel="noopener">
+          <span class="icon"><img draggable="false" src="assets/img/apps/contact.svg" alt="" width="64" height="64"></span>
+          <span class="label" data-i18n="contact">Contact</span>
+        </a>
+        <a class="app" data-id="email" draggable="false" href="mailto:leonelngoya@gmail.com">
+          <span class="icon"><img draggable="false" src="assets/img/apps/email.svg" alt="" width="64" height="64"></span>
+          <span class="label" data-i18n="email">Email</span>
+        </a>
+        <section class="widget qea" data-id="qea" data-name="Quiz et Anecdotes" aria-labelledby="qea-title">
+          <header class="qea-head">
+            <img src="assets/img/qea.webp" alt="" width="36" height="36">
+            <div>
+              <h2 id="qea-title" data-i18n="qeaTitle">Quiz et Anecdotes</h2>
+              <p data-i18n="qeaSub">A question from my YouTube channel (in French)</p>
+            </div>
+          </header>
+          <div class="qea-body" id="qea-body">
+            <p class="qea-q">
+              <a href="https://www.youtube.com/@QuizEtAnecdotes" data-i18n="qeaWatch" target="_blank" rel="noopener">Watch the channel</a>
+            </p>
+          </div>
+        </section>
       </div>
     </main>
   </div>

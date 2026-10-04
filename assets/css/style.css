@@ -327,18 +327,19 @@ h1 {
 /* ------------------------------------------------------------------ */
 
 .home {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
   /* laisse la place au dock fixé en bas */
   padding-bottom: calc(100px + env(safe-area-inset-bottom));
 }
 
-.grid {
+/* Une seule grille de 4 colonnes, comme un téléphone : les icônes prennent une case,
+   le widget échecs 2 × 2, le quiz toute la largeur. Le navigateur comble les trous. */
+.board {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: row dense;
+  align-items: start;
   column-gap: 8px;
-  row-gap: 18px;
+  row-gap: 20px;
 }
 
 [data-group] [data-id] {
@@ -423,6 +424,7 @@ h1 {
 
 /* Quiz et Anecdotes : les couleurs de la chaîne */
 .qea {
+  grid-column: span 4;
   padding: 16px 16px 16px;
   background:
     radial-gradient(140% 90% at 100% 0%, rgba(130, 112, 240, 0.45), transparent 60%),
@@ -573,12 +575,6 @@ h1 {
   color: #1d1647;
 }
 
-/* Bloc échecs + travail : un widget 2×2 et quatre icônes */
-.cluster {
-  grid-template-rows: auto auto;
-  align-items: start;
-}
-
 .chess {
   grid-column: span 2;
   grid-row: span 2;
@@ -586,7 +582,7 @@ h1 {
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  aspect-ratio: 1;
+  min-height: 150px;
   padding: 14px;
   overflow: hidden;
   color: var(--board-ivory);
@@ -667,14 +663,8 @@ h1 {
   transform: scale(0.98);
 }
 
-.work {
-  grid-column: span 2;
-  grid-row: span 2;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 8px;
-  row-gap: 18px;
-  align-content: space-between;
+.editing .chess:active {
+  transform: none;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1041,10 +1031,28 @@ h1 {
   animation-direction: alternate-reverse;
 }
 
+.editing .home .widget {
+  animation: jiggle-soft 300ms ease-in-out infinite alternate;
+}
+
+.editing .home .widget:nth-child(even) {
+  animation-delay: -150ms;
+  animation-direction: alternate-reverse;
+}
+
 .editing .app:active .icon,
 .editing .dock a:active {
   transform: none;
   filter: none;
+}
+
+@keyframes jiggle-soft {
+  from {
+    transform: rotate(-0.6deg);
+  }
+  to {
+    transform: rotate(0.6deg);
+  }
 }
 
 @keyframes jiggle {
@@ -1067,7 +1075,7 @@ h1 {
   z-index: 20;
   margin: 0;
   pointer-events: none;
-  transform: scale(1.12);
+  transform: scale(var(--lift, 1.12));
   transition: transform 120ms ease-out;
   will-change: transform;
 }
@@ -1083,6 +1091,12 @@ h1 {
 
 .drag-ghost .label {
   opacity: 0;
+}
+
+.drag-ghost.widget {
+  --lift: 1.04;
+  animation: none;
+  box-shadow: 0 24px 50px -18px rgba(4, 8, 24, 0.7);
 }
 
 .drag-ghost.is-dock {
@@ -1107,13 +1121,6 @@ h1 {
 .dragging,
 .dragging * {
   cursor: grabbing !important;
-}
-
-/* Mobile et tablette : le quiz passe après les autres blocs */
-@media (max-width: 1023px), (max-height: 639px) {
-  .qea {
-    order: 1;
-  }
 }
 
 /* Ordinateur : l'écran passe en paysage, l'heure à gauche et l'écran d'accueil à droite */
@@ -1172,6 +1179,7 @@ h1 {
 
 @media (prefers-reduced-motion: reduce) {
   .editing .home .app .icon,
+  .editing .home .widget,
   .editing .dock a svg {
     animation: none !important;
   }

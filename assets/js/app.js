@@ -503,21 +503,25 @@
 
   /* ---------------------------------------------------------------- */
   /* Organiser l'écran comme sur un téléphone                         */
-  /* Appui long : les icônes tremblent, on les fait glisser, OK pour  */
-  /* terminer. La disposition reste sur l'appareil du visiteur.       */
+  /* Appui long : icônes et widgets tremblent, on les fait glisser,   */
+  /* OK pour terminer. La disposition reste sur l'appareil du         */
+  /* visiteur, une pour le téléphone et une pour l'ordinateur.        */
   /* ---------------------------------------------------------------- */
 
   var LAYOUT_KEY = 'ln-layout'
   var LONG_PRESS = 500
-  var groups = {
-    home: { containers: $$('[data-group="home"]'), capacity: 4, fixed: false },
-    dock: { containers: $$('[data-group="dock"]'), capacity: Infinity, fixed: true },
-  }
+  var board = $('[data-group="home"]')
+  var dockEl = $('[data-group="dock"]')
+  var wideQuery = window.matchMedia('(min-width: 1024px) and (min-height: 640px)')
 
+  function mode() {
+    return wideQuery.matches ? 'wide' : 'narrow'
+  }
+  function container(g) {
+    return g === 'dock' ? dockEl : board
+  }
   function groupItems(g) {
-    return groups[g].containers.reduce(function (all, c) {
-      return all.concat($$('[data-id]', c))
-    }, [])
+    return $$(':scope > [data-id]', container(g))
   }
   function idsOf(list) {
     return list.map(function (el) {
@@ -525,18 +529,28 @@
     })
   }
   function groupOf(el) {
-    return el.closest('[data-group="dock"]') ? 'dock' : 'home'
+    return el.parentElement === dockEl ? 'dock' : 'home'
   }
   function itemFrom(node) {
-    return node && node.closest ? node.closest('[data-group] [data-id]') : null
+    var el = node && node.closest ? node.closest('[data-id]') : null
+    return el && (el.parentElement === board || el.parentElement === dockEl) ? el : null
   }
   function nameOf(el) {
     var label = $('.label', el)
-    return label ? label.textContent : el.getAttribute('data-social') || el.getAttribute('data-id')
+    if (label) return label.textContent
+    return el.getAttribute('data-name') || el.getAttribute('data-social') || el.getAttribute('data-id')
   }
 
-  // Range les éléments d'un groupe dans l'ordre donné, quatre par conteneur sur l'écran d'accueil.
+  // Ordre par défaut : sur téléphone le quiz est à la fin, sur ordinateur juste après les apps.
+  var narrowDefault = idsOf(groupItems('home'))
+  var defaults = {
+    narrow: narrowDefault,
+    wide: ['travora', 'voxylio', 'tchope', 'release-reel', 'qea', 'chess', 'portfolio', 'github', 'contact', 'email'],
+    dock: idsOf(groupItems('dock')),
+  }
+
   function place(g, order) {
+    var c = container(g)
     var byId = {}
     groupItems(g).forEach(function (el) {
       byId[el.getAttribute('data-id')] = el
@@ -547,39 +561,61 @@
     Object.keys(byId).forEach(function (id) {
       if (list.indexOf(id) < 0) list.push(id)
     })
-    var cs = groups[g].containers
-    var cap = groups[g].capacity
-    list.forEach(function (id, i) {
-      cs[Math.min(cs.length - 1, Math.floor(i / cap))].appendChild(byId[id])
+    list.forEach(function (id) {
+      c.appendChild(byId[id])
     })
   }
 
-  var defaults = { home: idsOf(groupItems('home')), dock: idsOf(groupItems('dock')) }
-
-  function currentLayout() {
-    return { home: idsOf(groupItems('home')), dock: idsOf(groupItems('dock')) }
-  }
-  function isDefault() {
-    var c = currentLayout()
-    return c.home.join() === defaults.home.join() && c.dock.join() === defaults.dock.join()
-  }
-  function saveLayout() {
-    if (isDefault()) store.remove(LAYOUT_KEY)
-    else store.set(LAYOUT_KEY, JSON.stringify(currentLayout()))
-    $('[data-reset]').hidden = isDefault()
-  }
-
-  ;(function restoreLayout() {
+  function readSaved() {
     var saved = null
     try {
       saved = JSON.parse(store.get(LAYOUT_KEY) || 'null')
     } catch (e) {}
-    if (!saved) return
-    if (Array.isArray(saved.home)) place('home', saved.home)
-    if (Array.isArray(saved.dock)) place('dock', saved.dock)
-  })()
+    if (!saved || typeof saved !== 'object') saved = {}
+    // Ancien format (une seule liste d'icônes) : on ne garde que le dock.
+    if (!saved.home || Array.isArray(saved.home)) saved.home = {}
+    return saved
+  }
 
-  // Animation FLIP : chaque icône glisse de son ancienne place vers la nouvelle.
+  function homeOrderFor(m) {
+    var saved = readSaved()
+    return Array.isArray(saved.home[m]) ? saved.home[m] : defaults[m]
+  }
+
+  function applyLayout() {
+    place('home', homeOrderFor(mode()))
+    var saved = readSaved()
+    if (Array.isArray(saved.dock)) place('dock', saved.dock)
+  }
+
+  function isDefault() {
+    var saved = readSaved()
+    return !saved.home.narrow && !saved.home.wide && !saved.dock
+  }
+
+  function saveLayout() {
+    var saved = readSaved()
+    var m = mode()
+    var home = idsOf(groupItems('home'))
+    var dock = idsOf(groupItems('dock'))
+    if (home.join() === defaults[m].join()) delete saved.home[m]
+    else saved.home[m] = home
+    if (dock.join() === defaults.dock.join()) delete saved.dock
+    else saved.dock = dock
+    if (!saved.home.narrow && !saved.home.wide && !saved.dock) store.remove(LAYOUT_KEY)
+    else store.set(LAYOUT_KEY, JSON.stringify(saved))
+    $('[data-reset]').hidden = isDefault()
+  }
+
+  applyLayout()
+  var onModeChange = function () {
+    if (drag) return
+    applyLayout()
+  }
+  if (wideQuery.addEventListener) wideQuery.addEventListener('change', onModeChange)
+  else if (wideQuery.addListener) wideQuery.addListener(onModeChange)
+
+  // Animation FLIP : chaque élément glisse de son ancienne place vers la nouvelle.
   function flip(g, mutate) {
     var els = groupItems(g)
     var before = els.map(function (el) {
@@ -629,28 +665,19 @@
     setEditing(false)
   })
   $('[data-reset]').addEventListener('click', function () {
+    store.remove(LAYOUT_KEY)
     flip('home', function () {
-      place('home', defaults.home)
+      place('home', defaults[mode()])
     })
     flip('dock', function () {
       place('dock', defaults.dock)
     })
-    saveLayout()
+    $('[data-reset]').hidden = true
   })
 
-  // Emplacements figés au début du glissement : la grille ne bouge pas, seules les icônes changent de case.
   var press = null
   var drag = null
   var lastTouch = 0
-
-  function slotsOf(g) {
-    var fixed = groups[g].fixed
-    return groupItems(g).map(function (el) {
-      var r = el.getBoundingClientRect()
-      var top = fixed ? r.top : r.top + window.scrollY
-      return { left: r.left, top: top, right: r.right, bottom: top + r.height, cx: r.left + r.width / 2, cy: top + r.height / 2 }
-    })
-  }
 
   function cancelPress() {
     if (press) clearTimeout(press.timer)
@@ -666,7 +693,6 @@
       press.timer = setTimeout(function () {
         if (!press) return
         press.armed = true
-        press.longPressed = true
         setEditing(true)
       }, LONG_PRESS)
     }
@@ -675,9 +701,11 @@
   function beginDrag(el, x, y) {
     var r = el.getBoundingClientRect()
     var ghost = el.cloneNode(true)
+    ;[ghost].concat($$('[id]', ghost)).forEach(function (n) {
+      n.removeAttribute('id')
+    })
     ghost.removeAttribute('data-id')
     ghost.removeAttribute('href')
-    ghost.removeAttribute('id')
     ghost.setAttribute('aria-hidden', 'true')
     ghost.classList.add('drag-ghost')
     if (groupOf(el) === 'dock') ghost.classList.add('is-dock')
@@ -688,33 +716,36 @@
     document.body.appendChild(ghost)
     el.classList.add('is-placeholder')
     root.classList.add('dragging')
-    var g = groupOf(el)
-    drag = { el: el, group: g, ghost: ghost, startX: x, startY: y, x: x, y: y, slots: slotsOf(g) }
+    drag = { el: el, group: groupOf(el), ghost: ghost, startX: x, startY: y, x: x, y: y, lastTarget: null, lockUntil: 0 }
     requestAnimationFrame(autoScroll)
   }
 
+  // L'élément sous le doigt prend la place visée ; une courte pause évite les allers-retours
+  // pendant que les autres glissent.
   function hitTest() {
+    var now = Date.now()
+    if (now < drag.lockUntil) return
     var g = drag.group
-    var px = drag.x
-    var py = groups[g].fixed ? drag.y : drag.y + window.scrollY
-    var best = -1
-    var bestD = Infinity
-    drag.slots.forEach(function (s, i) {
-      var inside = px >= s.left - 6 && px <= s.right + 6 && py >= s.top - 6 && py <= s.bottom + 6
-      var d = Math.hypot(px - s.cx, py - s.cy)
-      if (inside && d < bestD) {
-        bestD = d
-        best = i
-      }
-    })
-    if (best < 0) return
     var list = groupItems(g)
+    var target = null
+    list.forEach(function (el) {
+      if (el === drag.el || target) return
+      var r = el.getBoundingClientRect()
+      if (drag.x >= r.left && drag.x <= r.right && drag.y >= r.top && drag.y <= r.bottom) target = el
+    })
+    if (!target) {
+      drag.lastTarget = null
+      return
+    }
+    if (target === drag.lastTarget) return
     var from = list.indexOf(drag.el)
-    if (best === from) return
+    var to = list.indexOf(target)
+    drag.lastTarget = target
+    drag.lockUntil = now + 320
     flip(g, function () {
       var order = idsOf(list)
       order.splice(from, 1)
-      order.splice(best, 0, drag.el.getAttribute('data-id'))
+      order.splice(to, 0, drag.el.getAttribute('data-id'))
       place(g, order)
     })
   }
@@ -722,7 +753,8 @@
   function moveDrag(x, y) {
     drag.x = x
     drag.y = y
-    drag.ghost.style.transform = 'translate3d(' + (x - drag.startX) + 'px,' + (y - drag.startY) + 'px,0) scale(1.12)'
+    drag.ghost.style.transform =
+      'translate3d(' + (x - drag.startX) + 'px,' + (y - drag.startY) + 'px,0) scale(var(--lift, 1.12))'
     hitTest()
   }
 
@@ -734,11 +766,10 @@
       var bottomEdge = window.innerHeight - 150
       if (drag.y < 90) v = -(90 - drag.y) / 5
       else if (drag.y > bottomEdge) v = (drag.y - bottomEdge) / 5
-      if (v) {
-        window.scrollBy(0, v)
-        hitTest()
-      }
+      if (v) window.scrollBy(0, v)
     }
+    // Les éléments ont pu glisser sous le doigt immobile : on revérifie à chaque image.
+    if (Date.now() >= drag.lockUntil) hitTest()
     requestAnimationFrame(autoScroll)
   }
 
@@ -747,10 +778,9 @@
     drag = null
     root.classList.remove('dragging')
     var r = d.el.getBoundingClientRect()
-    var g0 = d.ghost.getBoundingClientRect()
     var baseLeft = parseFloat(d.ghost.style.left)
     var baseTop = parseFloat(d.ghost.style.top)
-    // L'icône rejoint sa case puis réapparaît à sa place.
+    // L'élément rejoint sa place puis réapparaît.
     d.ghost.classList.add('is-dropping')
     d.ghost.style.transform = 'translate3d(' + (r.left - baseLeft) + 'px,' + (r.top - baseTop) + 'px,0)'
     setTimeout(
@@ -758,7 +788,7 @@
         d.ghost.remove()
         d.el.classList.remove('is-placeholder')
       },
-      reduceMotion.matches || !g0.width ? 0 : 230
+      reduceMotion.matches ? 0 : 230
     )
     saveLayout()
     var list = groupItems(d.group)
@@ -823,7 +853,7 @@
   document.addEventListener('mouseup', endPointer)
   window.addEventListener('blur', endPointer)
 
-  // Pas de menu contextuel ni d'aperçu de lien pendant un appui long sur une icône.
+  // Pas de menu contextuel ni d'aperçu de lien pendant un appui long.
   document.addEventListener('contextmenu', function (e) {
     if ((press && press.kind === 'touch') || editing || drag) {
       if (itemFrom(e.target)) e.preventDefault()
@@ -833,7 +863,7 @@
     if (itemFrom(e.target)) e.preventDefault()
   })
 
-  // En mode organisation, toucher une icône ne l'ouvre pas ; toucher le fond termine.
+  // En mode organisation, toucher un élément ne l'ouvre pas ; toucher le fond termine.
   document.addEventListener(
     'click',
     function (e) {
@@ -841,12 +871,12 @@
       if (e.target.closest('.edit-bar')) return
       e.preventDefault()
       e.stopPropagation()
-      if (!itemFrom(e.target) && !e.target.closest('.widget')) setEditing(false)
+      if (!itemFrom(e.target)) setEditing(false)
     },
     true
   )
 
-  // Clavier : en mode organisation, les flèches déplacent l'icône sélectionnée, Échap termine.
+  // Clavier : en mode organisation, les flèches déplacent l'élément sélectionné, Échap termine.
   document.addEventListener('keydown', function (e) {
     if (!editing) return
     if (e.key === 'Escape') {
