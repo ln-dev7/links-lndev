@@ -971,6 +971,13 @@ h1 {
   }
 }
 
+/* Mobile et tablette : le quiz passe après les autres blocs */
+@media (max-width: 1023px), (max-height: 639px) {
+  .qea {
+    order: 1;
+  }
+}
+
 /* Ordinateur : l'écran passe en paysage, l'heure à gauche et l'écran d'accueil à droite */
 @media (min-width: 1024px) and (min-height: 640px) {
   :root {
