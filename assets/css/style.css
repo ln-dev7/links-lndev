@@ -342,14 +342,14 @@ h1 {
   row-gap: 20px;
 }
 
-[data-group] [data-id] {
+.organize [data-group] [data-id] {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
 }
 
-[data-group] [data-id] img {
+.organize [data-group] [data-id] img {
   -webkit-user-drag: none;
   pointer-events: none;
 }

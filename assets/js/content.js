@@ -5,6 +5,10 @@
 window.LN = {
   timeZone: 'Africa/Douala',
 
+  // Organiser l'écran (appui long, icônes et widgets qui tremblent, glisser-déposer).
+  // Désactivé : passe à true pour le réactiver, le code est toujours en place.
+  organize: false,
+
   chess: {
     username: 'ln_dev',
     profile: 'https://www.chess.com/member/ln_dev',

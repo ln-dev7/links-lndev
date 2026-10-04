@@ -510,6 +510,9 @@
 
   var LAYOUT_KEY = 'ln-layout'
   var LONG_PRESS = 500
+  // Interrupteur dans content.js : sans lui, la page garde l'ordre d'origine et les liens se comportent normalement.
+  var ORGANIZE = C.organize === true
+  if (ORGANIZE) root.classList.add('organize')
   var board = $('[data-group="home"]')
   var dockEl = $('[data-group="dock"]')
   var wideQuery = window.matchMedia('(min-width: 1024px) and (min-height: 640px)')
@@ -583,6 +586,11 @@
   }
 
   function applyLayout() {
+    if (!ORGANIZE) {
+      place('home', defaults[mode()])
+      place('dock', defaults.dock)
+      return
+    }
     place('home', homeOrderFor(mode()))
     var saved = readSaved()
     if (Array.isArray(saved.dock)) place('dock', saved.dock)
@@ -685,6 +693,7 @@
   }
 
   function startPress(x, y, target, kind) {
+    if (!ORGANIZE) return
     cancelPress()
     var el = itemFrom(target)
     if (!el) return
@@ -837,7 +846,7 @@
       var p = e.touches[0]
       movePointer(p.clientX, p.clientY, e)
     },
-    { passive: false }
+    { passive: !ORGANIZE }
   )
   document.addEventListener('touchend', endPointer)
   document.addEventListener('touchcancel', endPointer)
@@ -860,7 +869,7 @@
     }
   })
   document.addEventListener('dragstart', function (e) {
-    if (itemFrom(e.target)) e.preventDefault()
+    if (ORGANIZE && itemFrom(e.target)) e.preventDefault()
   })
 
   // En mode organisation, toucher un élément ne l'ouvre pas ; toucher le fond termine.
