@@ -8,14 +8,37 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/css/style.css">
   <style>
-    .lost { min-height: 100dvh; display: grid; place-content: center; gap: 18px; text-align: center; padding: 24px; text-shadow: var(--shadow-text); }
+    .lost {
+      position: relative;
+      z-index: 1;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 24px 16px;
+      text-align: center;
+      text-shadow: var(--shadow-text);
+    }
     .lost .clock { margin: 0; }
-    .lost a { justify-self: center; padding: 12px 20px; border-radius: 999px; background: var(--ink); color: #13203f; font-weight: 650; text-shadow: none; }
+    .lost .bio { margin: 0 0 10px; }
+    .lost a {
+      display: inline-flex;
+      align-items: center;
+      height: 48px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #13203f;
+      font-weight: 650;
+      text-shadow: none;
+    }
   </style>
 </head>
 <body>
   <div class="sky" aria-hidden="true"><div class="scrim"></div></div>
-  <main class="screen lost">
+  <main class="lost">
     <p class="clock">404</p>
     <p class="bio">Cette page n’existe pas. This page doesn’t exist.</p>
     <a href="/">links.lndev.me</a>
