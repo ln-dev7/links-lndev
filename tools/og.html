@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>OG links.lndev.me</title>
+<!-- Gabarit de l'image de partage (og.png, 1200×630).
+     Pour la régénérer : ouvrir ce fichier via un serveur local à la racine du projet,
+     fenêtre 1200×630, et faire une capture (voir README). -->
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+  html, body { width: 1200px; height: 630px; margin: 0; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(900px 520px at 86% 78%, rgba(255, 150, 100, 0.55), transparent 60%),
+      linear-gradient(180deg, #232c66 0%, #7a4a7c 62%, #d6735a 100%);
+  }
+  .og { position: relative; display: grid; grid-template-columns: 1fr 420px; align-items: center; gap: 40px; height: 100%; padding: 0 84px; text-shadow: var(--shadow-text); }
+  .og-stars { position: absolute; inset: 0 0 45% 0; background: url('../assets/img/stars.svg') center top / cover; opacity: .35; }
+  .og-mark { font-size: 250px; line-height: .86; font-weight: 640; font-stretch: 62%; letter-spacing: -0.01em; }
+  .og-name { display: flex; align-items: center; gap: 16px; margin-top: 26px; font-size: 46px; font-weight: 680; }
+  .og-name img { width: 64px; height: 64px; border-radius: 50%; box-shadow: 0 0 0 3px rgba(255,255,255,.9); }
+  .og-url { margin-top: 10px; font-size: 28px; color: var(--ink-soft); font-weight: 500; }
+  .og-apps { display: grid; grid-template-columns: 1fr 1fr; gap: 34px 40px; justify-items: center; }
+  .og-apps .icon { --icon: 132px; }
+  .og-apps .label { font-size: 22px; margin-top: 10px; }
+  .og-apps div { display: flex; flex-direction: column; align-items: center; }
+</style>
+</head>
+<body>
+  <div class="og-stars"></div>
+  <div class="og">
+    <div>
+      <div class="og-mark">LN</div>
+      <div class="og-name"><img src="../assets/img/avatar-192.webp" alt="">Leonel Ngoya</div>
+      <div class="og-url">links.lndev.me</div>
+    </div>
+    <div class="og-apps">
+      <div><span class="icon"><img src="../assets/img/apps/travora.svg" alt=""></span><span class="label">Travora</span></div>
+      <div><span class="icon"><img src="../assets/img/apps/voxylio.svg" alt=""></span><span class="label">Voxylio</span></div>
+      <div><span class="icon"><img src="../assets/img/apps/tchope.webp" alt=""></span><span class="label">Tchopé</span></div>
+      <div><span class="icon"><img src="../assets/img/apps/release-reel.svg" alt=""></span><span class="label">ReleaseReel</span></div>
+    </div>
+  </div>
+</body>
+</html>
