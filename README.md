@@ -7,7 +7,7 @@ La page est pensée comme l’écran d’accueil de mon téléphone : l’heure 
 - **Apps** : Travora, Voxylio, Tchopé, ReleaseReel. Un tap ouvre une fiche avec la description et les liens (site, App Store, Google Play, extensions…).
 - **Quiz et Anecdotes** : une question tirée d’un épisode publié de la chaîne, avec réponse et anecdote.
 - **Chess.com** : mon classement public (rapide, blitz) chargé depuis l’API publique de Chess.com ; sans réponse, le widget invite simplement à jouer.
-- **Travail et contact** : portfolio, GitHub, carte de contact ([hi.lndev.me](https://hi.lndev.me)) et email.
+- **Travail et contact** : portfolio, GitHub, Contact et email. Contact ouvre `contact.vcf` (la même fiche que [hi.lndev.me](https://hi.lndev.me) : nom, titre, deux numéros, email, site, LinkedIn, X, GitHub) et le téléphone propose de l’ajouter aux contacts. `vercel.json` sert ce fichier en `text/vcard` « inline » pour que l’aperçu natif s’ouvre au lieu d’un simple téléchargement.
 - **Dock** : TikTok, Instagram, YouTube, X, LinkedIn, Threads.
 - **Organiser** (désactivé) : un mode « écran d’accueil » où un appui long fait trembler icônes et widgets pour les déplacer, avec une disposition gardée par visiteur. Le code est en place mais coupé ; pour le réactiver, passer `organize: true` dans `assets/js/content.js`.
 

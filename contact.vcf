@@ -1,0 +1,13 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Leonel Ngoya
+N:Ngoya;Leonel;;;
+TITLE:Software Developer
+TEL;TYPE=CELL,VOICE:+237699792037
+TEL;TYPE=CELL,VOICE:+237670251174
+URL:https://lndev.me
+EMAIL;TYPE=INTERNET:leonelngoya@gmail.com
+X-SOCIALPROFILE;type=linkedin:https://www.linkedin.com/in/lndev/
+X-SOCIALPROFILE;type=twitter:https://x.com/ln_dev7
+X-SOCIALPROFILE;type=github:https://github.com/ln-dev7
+END:VCARD

@@ -332,6 +332,26 @@
   })()
 
   /* ---------------------------------------------------------------- */
+  /* Contact : la fiche contact.vcf s'ouvre et le système propose     */
+  /* de l'ajouter aux contacts, comme sur hi.lndev.me.                */
+  /* ---------------------------------------------------------------- */
+
+  ;(function () {
+    var link = $('[data-save-contact]')
+    if (!link) return
+    var label = $('.label', link)
+    var timer = null
+    link.addEventListener('click', function () {
+      if (root.classList.contains('editing')) return
+      label.textContent = t('contactSaved')
+      clearTimeout(timer)
+      timer = setTimeout(function () {
+        label.textContent = t('contact')
+      }, 2600)
+    })
+  })()
+
+  /* ---------------------------------------------------------------- */
   /* Quiz et Anecdotes                                                */
   /* ---------------------------------------------------------------- */
 
