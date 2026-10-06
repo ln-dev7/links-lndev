@@ -16,6 +16,32 @@ window.LN = {
 
   qea: 'https://www.youtube.com/@QuizEtAnecdotes',
 
+  // Le bouton Contact ouvre une fenêtre avec la fiche contact (contact.vcf, la même que sur hi.lndev.me) et l'email.
+  contact: {
+    icon: 'assets/img/apps/contact.svg',
+    vcard: 'contact.vcf',
+    email: 'leonelngoya@gmail.com',
+  },
+
+  // Mes collaborations (marques partenaires). Une seule : son icône s'affiche telle quelle sur l'écran d'accueil.
+  // Deux ou plus : elles se rangent dans un dossier « Collabs », comme sur iPhone. Pour en ajouter une, ajoute un objet
+  // ici (et son icône carrée dans assets/img/apps/) ; rien d'autre à toucher. Le premier lien est le bouton principal.
+  // index.html garde en dur la tuile de la première, pour les visiteurs sans JavaScript.
+  collabs: [
+    {
+      id: 'saily',
+      name: 'Saily',
+      icon: 'assets/img/apps/saily.svg',
+      subtitle: { fr: 'Collaboration commerciale', en: 'Paid partnership' },
+      description: {
+        fr: 'L’appli que j’utilise en voyage : une eSIM à installer avant de partir, pour avoir internet dès l’atterrissage, sans chercher de puce sur place. Avec mon code, 5 $ de réduction sur ton premier forfait.',
+        en: 'The app I use when I travel: an eSIM you install before you leave, so you’re online as soon as you land, without hunting for a local SIM. With my code, $5 off your first plan.',
+      },
+      code: 'LNDEV',
+      links: [{ kind: 'site', url: 'https://saily.com/creator/?coupon=lndev', label: { fr: 'Installer Saily', en: 'Get Saily' } }],
+    },
+  ],
+
   apps: {
     travora: {
       name: 'Travora',
@@ -162,9 +188,18 @@ window.LN = {
       portfolio: 'Portfolio',
       github: 'GitHub',
       contact: 'Contact',
-      contactLabel: 'Enregistrer le contact de Leonel Ngoya',
+      contactLabel: 'Contacter Leonel Ngoya',
+      contactSub: 'Leonel Ngoya · Douala',
+      contactDesc: 'Pour un projet, une collab ou juste dire bonjour : enregistre ma fiche ou écris-moi.',
+      contactSave: 'Enregistrer mon contact',
+      contactSaveDetail: 'Tél. et email',
       contactSaved: 'Ajouté',
-      email: 'Email',
+      contactEmail: 'M’écrire',
+      collabs: 'Collabs',
+      collabsLabel: 'Mes collaborations',
+      code: 'Mon code',
+      copy: 'Copier',
+      copied: 'Copié',
       followOn: 'LN sur {name}',
       close: 'Fermer',
       link_site: 'Ouvrir le site',
@@ -207,9 +242,18 @@ window.LN = {
       portfolio: 'Portfolio',
       github: 'GitHub',
       contact: 'Contact',
-      contactLabel: 'Save Leonel Ngoya’s contact',
+      contactLabel: 'Contact Leonel Ngoya',
+      contactSub: 'Leonel Ngoya · Douala',
+      contactDesc: 'For a project, a collab or just to say hi: save my card or drop me an email.',
+      contactSave: 'Save my contact',
+      contactSaveDetail: 'Phone & email',
       contactSaved: 'Added',
-      email: 'Email',
+      contactEmail: 'Email me',
+      collabs: 'Collabs',
+      collabsLabel: 'My collaborations',
+      code: 'My code',
+      copy: 'Copy',
+      copied: 'Copied',
       followOn: 'LN on {name}',
       close: 'Close',
       link_site: 'Open the website',

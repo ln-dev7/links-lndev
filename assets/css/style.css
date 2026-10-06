@@ -823,7 +823,13 @@ h1 {
   font-weight: 600;
 }
 
+.sheet-links a span:first-child {
+  flex: none;
+  white-space: nowrap;
+}
+
 .sheet-links a span:last-child {
+  min-width: 0;
   font-size: 13.5px;
   font-weight: 450;
   color: var(--sheet-muted);
@@ -890,6 +896,170 @@ h1 {
 @keyframes fade-out {
   to {
     opacity: 0;
+  }
+}
+
+/* Code promo d'une collab : un toucher le copie */
+.sheet-code {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  margin-top: 18px;
+  padding: 0 16px;
+  border: 1.5px dashed color-mix(in srgb, var(--sheet-ink) 28%, transparent);
+  border-radius: 14px;
+  background: var(--sheet-row);
+  color: var(--sheet-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sheet-code[hidden] {
+  display: none;
+}
+
+.sheet-code-label {
+  font-size: 13.5px;
+  color: var(--sheet-muted);
+}
+
+.sheet-code-value {
+  flex: 1;
+  font-size: 19px;
+  font-weight: 760;
+  letter-spacing: 0.06em;
+}
+
+.sheet-code-copy {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--sheet-line);
+  font-size: 13.5px;
+  font-weight: 650;
+  line-height: 30px;
+}
+
+.sheet-code.is-copied .sheet-code-copy {
+  background: #16a34a;
+  color: #fff;
+}
+
+.sheet-code:active {
+  transform: scale(0.985);
+}
+
+.sheet-code:focus-visible {
+  outline-color: #2563eb;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dossier « Collabs » (deux collabs ou plus), comme sur iPhone        */
+/* ------------------------------------------------------------------ */
+
+/* La tuile : un carré de verre avec l'aperçu des icônes (jusqu'à 9) */
+.icon.folder-icon {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-content: start;
+  gap: 7%;
+  padding: 13%;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+}
+
+.icon.folder-icon img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 24%;
+}
+
+/* Le dossier ouvert : le titre au-dessus d'un grand panneau de verre */
+.folder {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  overflow: visible;
+}
+
+.folder[open] {
+  display: grid;
+  place-items: center;
+}
+
+.folder::backdrop {
+  background: rgba(4, 8, 24, 0.32);
+  -webkit-backdrop-filter: blur(26px) saturate(1.3);
+  backdrop-filter: blur(26px) saturate(1.3);
+}
+
+.folder-wrap {
+  width: min(100vw - 56px, 340px);
+}
+
+.folder-title {
+  margin: 0 0 18px 10px;
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-shadow: var(--shadow-text);
+}
+
+.folder-panel {
+  padding: 22px 18px;
+  border-radius: 38px;
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(30px) saturate(1.5);
+  backdrop-filter: blur(30px) saturate(1.5);
+  box-shadow: inset 0 0 0 1px var(--glass-edge), 0 20px 50px -20px rgba(4, 8, 24, 0.5);
+}
+
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-items: center;
+  column-gap: 8px;
+  row-gap: 20px;
+}
+
+.folder[open] .folder-wrap {
+  animation: folder-in 300ms cubic-bezier(0.2, 0.9, 0.25, 1.1);
+}
+
+.folder[open]::backdrop {
+  animation: fade-in 240ms ease;
+}
+
+.folder.is-closing .folder-wrap {
+  animation: folder-out 190ms ease-in forwards;
+}
+
+.folder.is-closing::backdrop {
+  animation: fade-out 190ms ease-in forwards;
+}
+
+@keyframes folder-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes folder-out {
+  to {
+    opacity: 0;
+    transform: scale(0.86);
   }
 }
 

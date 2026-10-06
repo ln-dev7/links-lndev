@@ -136,13 +136,13 @@
           <span class="icon"><img draggable="false" src="assets/img/apps/github.svg" alt="" width="64" height="64"></span>
           <span class="label" data-i18n="github">GitHub</span>
         </a>
-        <a class="app" data-id="contact" draggable="false" href="contact.vcf" target="_blank" rel="noopener" data-save-contact aria-label="Save Leonel Ngoya’s contact" data-i18n-aria="contactLabel">
+        <a class="app" data-id="contact" draggable="false" href="contact.vcf" target="_blank" rel="noopener" data-sheet="contact" aria-label="Contact Leonel Ngoya" data-i18n-aria="contactLabel">
           <span class="icon"><img draggable="false" src="assets/img/apps/contact.svg" alt="" width="64" height="64"></span>
           <span class="label" data-i18n="contact">Contact</span>
         </a>
-        <a class="app" data-id="email" draggable="false" href="mailto:leonelngoya@gmail.com">
-          <span class="icon"><img draggable="false" src="assets/img/apps/email.svg" alt="" width="64" height="64"></span>
-          <span class="label" data-i18n="email">Email</span>
+        <a class="app" data-id="collabs" draggable="false" href="https://saily.com/creator/?coupon=lndev" data-collabs target="_blank" rel="noopener sponsored">
+          <span class="icon"><img draggable="false" src="assets/img/apps/saily.svg" alt="" width="64" height="64"></span>
+          <span class="label">Saily</span>
         </a>
         <section class="widget qea" data-id="qea" data-name="Quiz et Anecdotes" aria-labelledby="qea-title">
           <header class="qea-head">
@@ -195,7 +195,21 @@
         </div>
       </div>
       <p class="sheet-desc" id="sheet-desc"></p>
+      <button type="button" class="sheet-code" id="sheet-code" hidden>
+        <span class="sheet-code-label" data-i18n="code">My code</span>
+        <span class="sheet-code-value" id="sheet-code-value"></span>
+        <span class="sheet-code-copy" id="sheet-code-copy" data-i18n="copy">Copy</span>
+      </button>
       <ul class="sheet-links" id="sheet-links"></ul>
+    </div>
+  </dialog>
+
+  <dialog class="folder" id="folder" aria-labelledby="folder-title">
+    <div class="folder-wrap">
+      <h2 class="folder-title" id="folder-title" data-i18n="collabs">Collabs</h2>
+      <div class="folder-panel">
+        <div class="folder-grid" id="folder-grid"></div>
+      </div>
     </div>
   </dialog>
 

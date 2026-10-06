@@ -82,7 +82,8 @@
     tick()
     renderQuiz()
     renderChess()
-    if (sheet.open && currentApp) fillSheet(currentApp)
+    renderCollabs()
+    if (sheet.open && currentKey) fillSheet(currentKey)
   }
 
   $$('[data-lang]').forEach(function (b) {
@@ -221,11 +222,11 @@
   })
 
   /* ---------------------------------------------------------------- */
-  /* Fiches d'apps                                                    */
+  /* Fiches : apps, contact et collabs                                */
   /* ---------------------------------------------------------------- */
 
   var sheet = $('#sheet')
-  var currentApp = null
+  var currentKey = null
 
   function host(url) {
     try {
@@ -235,60 +236,139 @@
     }
   }
 
-  function fillSheet(id) {
-    var app = C.apps[id]
-    $('#sheet-icon').src = app.icon
-    $('#sheet-title').textContent = app.name
-    $('#sheet-platforms').textContent = app.platforms[lang]
-    $('#sheet-desc').textContent = typo(app.description[lang])
+  // Texte FR/EN ({ fr, en }) ou texte simple
+  function loc(v) {
+    return v && typeof v === 'object' ? v[lang] : v
+  }
+
+  function img(src, size) {
+    var i = document.createElement('img')
+    i.src = src
+    i.alt = ''
+    i.width = size
+    i.height = size
+    i.draggable = false
+    return i
+  }
+
+  // Les collabs qui ont un lien (content.js), dans l'ordre
+  function collabs() {
+    return (C.collabs || []).filter(function (c) {
+      return c.links && c.links.length && c.links[0].url
+    })
+  }
+
+  // Ce que montre la fiche pour une clé : « travora » (une app), « contact » ou « collab:saily ».
+  function sheetItem(key) {
+    if (key === 'contact' && C.contact) {
+      return {
+        icon: C.contact.icon,
+        name: t('contact'),
+        subtitle: t('contactSub'),
+        description: t('contactDesc'),
+        links: [
+          { url: C.contact.vcard, label: t('contactSave'), detail: t('contactSaveDetail'), done: t('contactSaved') },
+          { url: 'mailto:' + C.contact.email, label: t('contactEmail'), detail: C.contact.email, sameTab: true },
+        ],
+      }
+    }
+    if (key && key.indexOf('collab:') === 0) {
+      var id = key.slice(7)
+      return (
+        collabs().filter(function (c) {
+          return c.id === id
+        })[0] || null
+      )
+    }
+    return C.apps[key] || null
+  }
+
+  function fillSheet(key) {
+    var item = sheetItem(key)
+    var sponsored = key.indexOf('collab:') === 0
+    $('#sheet-icon').src = item.icon
+    $('#sheet-title').textContent = item.name
+    $('#sheet-platforms').textContent = typo(loc(item.subtitle || item.platforms) || '')
+    $('#sheet-desc').textContent = typo(loc(item.description) || '')
+
+    var code = $('#sheet-code')
+    code.hidden = !item.code
+    code.classList.remove('is-copied')
+    if (item.code) {
+      $('#sheet-code-value').textContent = item.code
+      $('#sheet-code-copy').textContent = t('copy')
+    }
+
     var list = $('#sheet-links')
     list.textContent = ''
-    app.links.forEach(function (link, i) {
+    item.links.forEach(function (link, i) {
       var li = document.createElement('li')
       var a = document.createElement('a')
       a.href = link.url
-      a.target = '_blank'
-      a.rel = 'noopener'
+      if (!link.sameTab) {
+        a.target = '_blank'
+        a.rel = sponsored ? 'noopener sponsored' : 'noopener'
+      }
       if (i === 0) a.className = 'is-primary'
       var label = document.createElement('span')
-      label.textContent = t('link_' + link.kind)
+      var text = link.label ? typo(loc(link.label)) : t('link_' + link.kind)
+      label.textContent = text
       var where = document.createElement('span')
-      where.textContent = host(link.url)
+      where.textContent = link.detail || host(link.url)
       a.appendChild(label)
       a.appendChild(where)
+      // Retour visuel (ex. « Ajouté » après avoir ouvert la fiche contact)
+      if (link.done) {
+        var timer = null
+        a.addEventListener('click', function () {
+          label.textContent = link.done
+          clearTimeout(timer)
+          timer = setTimeout(function () {
+            label.textContent = text
+          }, 2600)
+        })
+      }
       li.appendChild(a)
       list.appendChild(li)
     })
   }
 
-  function openSheet(id) {
-    if (!C.apps[id] || typeof sheet.showModal !== 'function') return false
-    currentApp = id
-    fillSheet(id)
+  function openSheet(key) {
+    if (!sheetItem(key) || typeof sheet.showModal !== 'function') return false
+    currentKey = key
+    fillSheet(key)
     sheet.classList.remove('is-closing')
     sheet.showModal()
     return true
   }
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-  function closeSheet() {
-    if (!sheet.open || sheet.classList.contains('is-closing')) return
+  // Ferme une fenêtre (fiche ou dossier) avec son animation de sortie
+  function closeDialog(d) {
+    if (!d.open || d.classList.contains('is-closing')) return
     if (reduceMotion.matches) {
-      sheet.close()
+      d.close()
       return
     }
-    sheet.classList.add('is-closing')
+    d.classList.add('is-closing')
     setTimeout(function () {
-      sheet.classList.remove('is-closing')
-      sheet.close()
+      d.classList.remove('is-closing')
+      d.close()
     }, 190)
   }
+  function closeSheet() {
+    closeDialog(sheet)
+  }
 
-  $$('[data-app]').forEach(function (a) {
-    a.addEventListener('click', function (e) {
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
-      if (openSheet(a.getAttribute('data-app'))) e.preventDefault()
-    })
+  // Un élément avec data-app (une app) ou data-sheet (contact, collab) ouvre sa fiche ; sans JavaScript, son lien.
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest && e.target.closest('[data-app], [data-sheet]')
+    if (!el || root.classList.contains('editing')) return
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+    var key = el.getAttribute('data-sheet') || el.getAttribute('data-app')
+    if (!sheetItem(key)) return
+    if (folder.open && folder.contains(el)) folder.close()
+    if (openSheet(key)) e.preventDefault()
   })
 
   sheet.addEventListener('cancel', function (e) {
@@ -299,7 +379,7 @@
     if (e.target === sheet || e.target.hasAttribute('data-close')) closeSheet()
   })
   sheet.addEventListener('close', function () {
-    currentApp = null
+    currentKey = null
     $('.sheet-panel').style.transform = ''
   })
 
@@ -331,25 +411,132 @@
     panel.addEventListener('pointercancel', end)
   })()
 
-  /* ---------------------------------------------------------------- */
-  /* Contact : la fiche contact.vcf s'ouvre et le système propose     */
-  /* de l'ajouter aux contacts, comme sur hi.lndev.me.                */
-  /* ---------------------------------------------------------------- */
-
+  // Code promo d'une collab : un toucher le copie
   ;(function () {
-    var link = $('[data-save-contact]')
-    if (!link) return
-    var label = $('.label', link)
+    var btn = $('#sheet-code')
     var timer = null
-    link.addEventListener('click', function () {
-      if (root.classList.contains('editing')) return
-      label.textContent = t('contactSaved')
+    function done() {
+      $('#sheet-code-copy').textContent = t('copied')
+      btn.classList.add('is-copied')
       clearTimeout(timer)
       timer = setTimeout(function () {
-        label.textContent = t('contact')
-      }, 2600)
+        $('#sheet-code-copy').textContent = t('copy')
+        btn.classList.remove('is-copied')
+      }, 2000)
+    }
+    function fallback(text) {
+      var area = document.createElement('textarea')
+      area.value = text
+      area.setAttribute('readonly', '')
+      area.style.position = 'fixed'
+      area.style.opacity = '0'
+      btn.appendChild(area)
+      area.select()
+      try {
+        document.execCommand('copy')
+      } catch (e) {}
+      btn.removeChild(area)
+      done()
+    }
+    btn.addEventListener('click', function () {
+      var text = $('#sheet-code-value').textContent
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () {
+          fallback(text)
+        })
+      } else {
+        fallback(text)
+      }
     })
   })()
+
+  /* ---------------------------------------------------------------- */
+  /* Collabs : une seule marque, son icône ; deux ou plus, un dossier */
+  /* comme sur iPhone (aperçu des icônes, puis le dossier s'ouvre).   */
+  /* ---------------------------------------------------------------- */
+
+  var folder = $('#folder')
+  var collabTile = $('[data-collabs]')
+
+  function renderFolder(list) {
+    var grid = $('#folder-grid')
+    grid.textContent = ''
+    list.forEach(function (c) {
+      var a = document.createElement('a')
+      a.className = 'app'
+      a.href = c.links[0].url
+      a.target = '_blank'
+      a.rel = 'noopener sponsored'
+      a.setAttribute('data-sheet', 'collab:' + c.id)
+      var icon = document.createElement('span')
+      icon.className = 'icon'
+      icon.appendChild(img(c.icon, 64))
+      var label = document.createElement('span')
+      label.className = 'label'
+      label.textContent = c.name
+      a.appendChild(icon)
+      a.appendChild(label)
+      grid.appendChild(a)
+    })
+  }
+
+  function renderCollabs() {
+    if (!collabTile) return
+    var list = collabs()
+    collabTile.hidden = !list.length
+    if (!list.length) return
+    var icon = $('.icon', collabTile)
+    var label = $('.label', collabTile)
+    icon.textContent = ''
+    if (list.length === 1) {
+      var c = list[0]
+      collabTile.href = c.links[0].url
+      collabTile.target = '_blank'
+      collabTile.setAttribute('data-sheet', 'collab:' + c.id)
+      collabTile.removeAttribute('aria-haspopup')
+      collabTile.removeAttribute('aria-label')
+      icon.className = 'icon'
+      icon.appendChild(img(c.icon, 64))
+      label.textContent = c.name
+    } else {
+      collabTile.href = '#collabs'
+      collabTile.removeAttribute('target')
+      collabTile.removeAttribute('data-sheet')
+      collabTile.setAttribute('aria-haspopup', 'dialog')
+      collabTile.setAttribute('aria-label', t('collabsLabel'))
+      icon.className = 'icon folder-icon'
+      list.slice(0, 9).forEach(function (c) {
+        icon.appendChild(img(c.icon, 20))
+      })
+      label.textContent = t('collabs')
+      renderFolder(list)
+    }
+  }
+
+  function openFolder() {
+    if (typeof folder.showModal !== 'function') return false
+    folder.classList.remove('is-closing')
+    folder.showModal()
+    var first = $('.app', folder)
+    if (first) first.focus()
+    return true
+  }
+
+  if (collabTile) {
+    collabTile.addEventListener('click', function (e) {
+      if (collabs().length < 2 || root.classList.contains('editing')) return
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+      if (openFolder()) e.preventDefault()
+    })
+  }
+  folder.addEventListener('cancel', function (e) {
+    e.preventDefault()
+    closeDialog(folder)
+  })
+  // Toucher en dehors des icônes referme le dossier, comme sur iPhone
+  folder.addEventListener('click', function (e) {
+    if (!e.target.closest('.folder-grid .app')) closeDialog(folder)
+  })
 
   /* ---------------------------------------------------------------- */
   /* Quiz et Anecdotes                                                */
@@ -568,7 +755,7 @@
   var narrowDefault = idsOf(groupItems('home'))
   var defaults = {
     narrow: narrowDefault,
-    wide: ['travora', 'voxylio', 'tchope', 'release-reel', 'qea', 'chess', 'portfolio', 'github', 'contact', 'email'],
+    wide: ['travora', 'voxylio', 'tchope', 'release-reel', 'qea', 'chess', 'portfolio', 'github', 'contact', 'collabs'],
     dock: idsOf(groupItems('dock')),
   }
 
