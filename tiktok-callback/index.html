@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Creator Stats · Connexion TikTok</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <style>
+    :root { color-scheme: light dark; --bg: #f6f7f9; --card: #fff; --ink: #13203f; --muted: #5b6676; --line: #dde2e8; --accent: #fe2c55; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0f141b; --card: #161d27; --ink: #e8edf3; --muted: #9aa6b5; --line: #263142; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 560px; margin: 0 auto; padding: 48px 16px 64px; }
+    h1 { font-size: 26px; line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 8px; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-top: 20px; }
+    label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    input, textarea { width: 100%; font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); background: var(--bg);
+      border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+    textarea { resize: none; height: 96px; word-break: break-all; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 11px 16px; border: 0;
+      border-radius: 10px; background: var(--accent); color: #fff; font: 600 15px/1 inherit; font-family: inherit; text-decoration: none; cursor: pointer; }
+    .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; }
+    ol { padding-left: 20px; margin: 10px 0 0; }
+    li { margin: 4px 0; }
+    .err { color: #d1394f; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Connexion TikTok</h1>
+  <p class="muted">Page technique de Creator Stats, l'outil de statistiques personnel de LN. Elle sert seulement à relier son
+    compte TikTok à son tableau de bord. Rien n'est enregistré ici.</p>
+
+  <!-- 1. Démarrer : clé client (publique) puis autorisation TikTok -->
+  <section id="start" class="card" hidden>
+    <label for="key">Client key de l'app « Creator Stats » (sandbox)</label>
+    <input id="key" autocomplete="off" spellcheck="false" placeholder="awxxxxxxxxxxxxxx">
+    <p class="muted">developers.tiktok.com → Creator Stats → Sandbox → Credentials. La clé client n'est pas secrète ;
+      elle reste dans ce navigateur.</p>
+    <button class="btn" id="go" type="button">Se connecter avec TikTok</button>
+    <p class="err" id="start-err" hidden></p>
+  </section>
+
+  <!-- 2. Retour de TikTok : le code à passer à l'Action GitHub -->
+  <section id="done" class="card" hidden>
+    <label for="code">Code d'autorisation</label>
+    <textarea id="code" readonly></textarea>
+    <div class="row">
+      <button class="btn" id="copy" type="button">Copier le code</button>
+      <a class="btn ghost" href="https://github.com/ln-dev7/release-reel/actions/workflows/antenne-tiktok.yml" target="_blank" rel="noopener">Ouvrir l'Action GitHub</a>
+    </div>
+    <ol class="muted">
+      <li>Copie le code (il ne sert qu'une fois et expire vite : fais-le tout de suite).</li>
+      <li>Sur GitHub : <strong>Run workflow</strong>, colle le code dans « code », puis <strong>Run workflow</strong>.</li>
+      <li>L'Action échange le code et enregistre le secret <code>TT_REFRESH_TOKEN</code>. C'est fini pour un an.</li>
+    </ol>
+  </section>
+
+  <!-- Erreur renvoyée par TikTok -->
+  <section id="fail" class="card" hidden>
+    <p class="err" id="fail-msg"></p>
+    <a class="btn ghost" href="./">Recommencer</a>
+  </section>
+</main>
+<script>
+(function () {
+  var SCOPES = "user.info.basic,user.info.profile,user.info.stats,video.list";
+  var REDIRECT = location.origin + "/tiktok-callback/";
+  var $ = function (id) { return document.getElementById(id); };
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  var q = new URLSearchParams(location.search);
+
+  if (q.get("error")) {
+    $("fail-msg").textContent = "TikTok a refusé la connexion : " + (q.get("error_description") || q.get("error"));
+    $("fail").hidden = false;
+    return;
+  }
+
+  if (q.get("code")) {
+    var expected = store.get("tt.state");
+    if (expected && q.get("state") !== expected) {
+      $("fail-msg").textContent = "Réponse inattendue (state différent). Recommence depuis cette page.";
+      $("fail").hidden = false;
+      return;
+    }
+    $("code").value = q.get("code");
+    $("done").hidden = false;
+    // retire le code de la barre d'adresse et de l'historique
+    history.replaceState(null, "", location.pathname);
+    $("copy").onclick = function () {
+      var t = $("code").value;
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () {
+        $("copy").textContent = "Copié";
+      }, function () { $("code").select(); document.execCommand("copy"); $("copy").textContent = "Copié"; });
+    };
+    return;
+  }
+
+  $("key").value = q.get("client_key") || store.get("tt.key");
+  $("start").hidden = false;
+  $("go").onclick = function () {
+    var key = $("key").value.trim();
+    if (!/^[A-Za-z0-9]{8,}$/.test(key)) { $("start-err").textContent = "Colle la client key de l'app."; $("start-err").hidden = false; return; }
+    var state = Array.from(crypto.getRandomValues(new Uint8Array(12)), function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+    store.set("tt.key", key);
+    store.set("tt.state", state);
+    location.href = "https://www.tiktok.com/v2/auth/authorize/?" + new URLSearchParams({
+      client_key: key, scope: SCOPES, response_type: "code", redirect_uri: REDIRECT, state: state
+    });
+  };
+})();
+</script>
+</body>
+</html>
