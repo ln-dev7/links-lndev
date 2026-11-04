@@ -559,6 +559,8 @@
   }
 
   function renderQuiz(focusFirst) {
+    // Le widget peut être retiré (commenté) de index.html : rien à afficher dans ce cas.
+    if (!$('#qea-body')) return
     if (quiz.index < 0) nextQuestion()
     var item = C.quiz[quiz.index]
     var q = item[lang]
