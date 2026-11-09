@@ -757,7 +757,7 @@
   var narrowDefault = idsOf(groupItems('home'))
   var defaults = {
     narrow: narrowDefault,
-    wide: ['travora', 'voxylio', 'tchope', 'release-reel', 'qea', 'chess', 'portfolio', 'github', 'contact', 'collabs'],
+    wide: ['travora', 'voxylio', 'tchope', 'oddwink', 'qea', 'chess', 'portfolio', 'github', 'contact', 'collabs'],
     dock: idsOf(groupItems('dock')),
   }
 

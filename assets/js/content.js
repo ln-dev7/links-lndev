@@ -87,15 +87,15 @@ window.LN = {
         { kind: 'github', url: 'https://github.com/ln-dev7/tchope' },
       ],
     },
-    'release-reel': {
-      name: 'ReleaseReel',
-      icon: 'assets/img/apps/release-reel.svg',
-      platforms: { fr: 'Skills pour Claude Code', en: 'Skills for Claude Code' },
+    oddwink: {
+      name: 'Oddwink',
+      icon: 'assets/img/apps/oddwink.png',
+      platforms: { fr: 'Web', en: 'Web' },
       description: {
-        fr: 'Cinq skills Claude Code qui font tes vidéos : films de lancement de ton vrai produit filmé image par image, TikToks, shorts dessinés avec mascotte et vidéos sans visage sur n’importe quel sujet. Paiement unique.',
-        en: 'Five Claude Code skills that make your videos: launch films of your real product filmed frame by frame, TikToks, hand-drawn mascot shorts and faceless shorts on any topic. One-time payment.',
+        fr: 'Des jeux entre amis sur un téléphone partagé, en français et en anglais : L’Intrus, Mot Complice et d’autres jeux pour jouer ensemble.',
+        en: 'Party games on one shared phone, in French and English: Odd One Out, Secret Helper and more games to play together.',
       },
-      links: [{ kind: 'site', url: 'https://release-reel.lndev.me' }],
+      links: [{ kind: 'site', url: 'https://oddwink.lndev.me' }],
     },
   },
 
