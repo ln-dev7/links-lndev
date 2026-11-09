@@ -314,7 +314,7 @@
       var text = link.label ? typo(loc(link.label)) : t('link_' + link.kind)
       label.textContent = text
       var where = document.createElement('span')
-      where.textContent = link.detail || host(link.url)
+      where.textContent = loc(link.detail) || host(link.url)
       a.appendChild(label)
       a.appendChild(where)
       // Retour visuel (ex. « Ajouté » après avoir ouvert la fiche contact)

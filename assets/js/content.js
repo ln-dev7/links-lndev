@@ -90,12 +90,16 @@ window.LN = {
     oddwink: {
       name: 'Oddwink',
       icon: 'assets/img/apps/oddwink.png',
-      platforms: { fr: 'Web', en: 'Web' },
+      platforms: { fr: 'Web, iOS et Android (test fermé)', en: 'Web, iOS and Android (closed test)' },
       description: {
         fr: 'Des jeux entre amis sur un téléphone partagé, en français et en anglais : L’Intrus, Mot Complice et d’autres jeux pour jouer ensemble.',
         en: 'Party games on one shared phone, in French and English: Odd One Out, Secret Helper and more games to play together.',
       },
-      links: [{ kind: 'site', url: 'https://oddwink.lndev.me' }],
+      links: [
+        { kind: 'site', url: 'https://oddwink.lndev.me' },
+        { kind: 'appStore', url: 'https://apps.apple.com/app/oddwink/id6830394695' },
+        { kind: 'googlePlay', url: 'https://play.google.com/apps/testing/com.lndev.oddwink', label: { fr: 'Google Play · Test fermé', en: 'Google Play · Closed test' }, detail: { fr: 'Réservé aux testeurs autorisés', en: 'For approved testers only' } },
+      ],
     },
   },
 
