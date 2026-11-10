@@ -98,7 +98,7 @@ window.LN = {
       links: [
         { kind: 'site', url: 'https://oddwink.lndev.me' },
         { kind: 'appStore', url: 'https://apps.apple.com/app/oddwink/id6830394695' },
-        { kind: 'googlePlay', url: 'https://play.google.com/apps/testing/com.lndev.oddwink', label: { fr: 'Google Play · Test fermé', en: 'Google Play · Closed test' }, detail: { fr: 'Réservé aux testeurs autorisés', en: 'For approved testers only' } },
+        { kind: 'googlePlay', url: 'https://play.google.com/apps/testing/com.lndev.oddwink', label: { fr: 'Google Play version test', en: 'Google Play test version' } },
       ],
     },
   },
